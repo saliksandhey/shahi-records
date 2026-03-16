@@ -17,8 +17,8 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         // Simple username/passkey requirement
-        if (username === 'shahiboutique' && password === '123456') {
-            const mockUser = { id: 1, role: 'admin', username: 'shahiboutique' };
+        if (username === 'boutique.shahi' && password === 'shahi2010') {
+            const mockUser = { id: 1, role: 'admin', username: 'boutique.shahi' };
             setUser(mockUser);
             localStorage.setItem('shahi_mock_user', JSON.stringify(mockUser));
             return mockUser;

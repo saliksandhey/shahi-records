@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { PlusCircle, Trash2, Printer, Download, CheckCircle, FileText } from 'lucide-react';
+import { PlusCircle, Trash2, Printer, Download, CheckCircle, FileText, Upload, RefreshCw, Calendar, User, Scissors, Box, IndianRupee, Sparkles } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 
 function convertNumberToWords(amount) {
@@ -61,7 +61,6 @@ export default function CreateInvoice() {
             }
         } catch (error) {
             console.error('Error fetching invoice number:', error);
-            // Fallback
             setInvoiceNumber(`SB-${year}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`);
         }
     };
@@ -135,9 +134,10 @@ export default function CreateInvoice() {
             if (itemsError) throw itemsError;
 
             setIsSaved(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             console.error('Error saving invoice:', error);
-            alert('Failed to save invoice. Ensure tables are created (run invoice_setup.sql).');
+            alert('Failed to save invoice. Ensure tables are created.');
         } finally {
             setIsSaving(false);
         }
@@ -170,12 +170,11 @@ export default function CreateInvoice() {
         await new Promise(r => setTimeout(r, 80));
         try {
             await html2pdf().set({
-                margin: [5, 6, 5, 6],
+                margin: 0,
                 filename: `${invoiceNumber}.pdf`,
-                image: { type: 'jpeg', quality: 0.99 },
-                html2canvas: { scale: 3, useCORS: true, logging: false, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all'] },
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true, logging: false, letterRendering: true, windowWidth: 794 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             }).from(element).save();
         } catch (err) {
             console.error('PDF generation failed:', err);
@@ -198,64 +197,72 @@ export default function CreateInvoice() {
     const totalAmount = calculateTotal();
 
     return (
-        <div className="page-container">
-            <div className="flex-row-between mb-4">
-                <h1 className="page-title" style={{ margin: 0 }}>Create Invoice</h1>
+        <div className="page-container page-animate-in">
+            <div className="modern-header-section fade-up-1">
+                <div className="header-greeting-wrapper">
+                    <div className="greeting-pill"><Sparkles size={12} style={{marginRight: '4px', verticalAlign:'middle'}}/> Premium Billing</div>
+                    <h1 className="dashboard-title-modern">Invoice Center</h1>
+                    <p className="dashboard-date-modern">Generate & Manage Client Invoices</p>
+                </div>
                 {isSaved && (
-                    <button className="btn btn-secondary" onClick={resetForm}>
-                        Create New
+                    <button className="btn btn-secondary premium-glow-btn" onClick={resetForm} style={{ backgroundColor: 'white' }}>
+                        <PlusCircle size={18} /> New Invoice
                     </button>
                 )}
             </div>
 
             <div className="invoice-grid d-print-none">
-                <div className="card">
-                    <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FileText size={20} className="text-muted" /> Invoice Details
+                <div className="dash-card premium-card card-primary fade-up-2" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '30px' }}>
+                    <div className="card-bg-decoration"></div>
+                    <h3 className="section-title modern-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', zIndex: 1, marginBottom: '24px' }}>
+                        <User size={20} color="var(--primary-color)" /> Client & Dates
                     </h3>
-                    <div className="form-grid">
+                    <div className="form-grid" style={{ zIndex: 1 }}>
                         <div className="form-group">
-                            <label className="form-label">Customer Name *</label>
-                            <input type="text" className="form-control" value={customerName} onChange={e => setCustomerName(e.target.value)} disabled={isSaved} />
+                            <label className="form-label" style={{display:'flex', gap:'6px', alignItems:'center'}}><User size={14}/> Customer Name *</label>
+                            <input type="text" className="form-control" placeholder="Enter full name" value={customerName} onChange={e => setCustomerName(e.target.value)} disabled={isSaved} />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Phone</label>
-                            <input type="text" className="form-control" value={phone} onChange={e => setPhone(e.target.value)} disabled={isSaved} />
+                            <label className="form-label" style={{display:'flex', gap:'6px', alignItems:'center'}}><User size={14}/> Phone Number</label>
+                            <input type="text" className="form-control" placeholder="Optional" value={phone} onChange={e => setPhone(e.target.value)} disabled={isSaved} />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Rec Date *</label>
+                            <label className="form-label" style={{display:'flex', gap:'6px', alignItems:'center'}}><Calendar size={14}/> Receive Date *</label>
                             <input type="date" className="form-control" value={recDate} onChange={e => setRecDate(e.target.value)} disabled={isSaved} />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Delivery Date *</label>
+                            <label className="form-label" style={{display:'flex', gap:'6px', alignItems:'center'}}><Calendar size={14}/> Delivery Date *</label>
                             <input type="date" className="form-control" value={delDate} onChange={e => setDelDate(e.target.value)} disabled={isSaved} />
                         </div>
                     </div>
                 </div>
 
-                <div className="card">
-                    <h3 className="section-title">Items</h3>
-                    <div className="item-list">
+                <div className="dash-card premium-card card-tertiary fade-up-3" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: '30px' }}>
+                     <div className="card-bg-decoration"></div>
+                    <h3 className="section-title modern-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', zIndex: 1, marginBottom: '24px' }}>
+                        <Scissors size={20} color="#374151" /> Services & Items
+                    </h3>
+                    <div className="item-list form-items-modern" style={{ zIndex: 1, width: '100%' }}>
                         {items.map((item, index) => (
-                            <div key={item.id} className="item-row">
-                                <div>
-                                    <label className="form-label" style={{ display: index === 0 ? 'block' : 'none' }}>Description</label>
-                                    <input type="text" className="form-control" value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} placeholder="Item desc" disabled={isSaved} />
+                            <div key={item.id} className="item-row-modern">
+                                <div className="item-col-desc">
+                                    <label className="form-label" style={{ display: index === 0 ? 'flex' : 'none', gap:'6px', alignItems:'center' }}><Box size={14}/> Description</label>
+                                    <input type="text" className="form-control" value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} placeholder="E.g., Custom Bridal Suit" disabled={isSaved} />
                                 </div>
-                                <div>
+                                <div className="item-col-qty">
                                     <label className="form-label" style={{ display: index === 0 ? 'block' : 'none' }}>Qty</label>
                                     <input type="number" min="1" className="form-control" value={item.quantity} onChange={e => handleItemChange(item.id, 'quantity', e.target.value)} disabled={isSaved} />
                                 </div>
-                                <div>
-                                    <label className="form-label" style={{ display: index === 0 ? 'block' : 'none' }}>Price</label>
-                                    <input type="number" min="0" className="form-control" value={item.price} onChange={e => handleItemChange(item.id, 'price', e.target.value)} disabled={isSaved} />
+                                <div className="item-col-price">
+                                    <label className="form-label" style={{ display: index === 0 ? 'flex' : 'none', gap:'6px', alignItems:'center' }}><IndianRupee size={14}/> Price</label>
+                                    <input type="number" min="0" className="form-control" value={item.price} onChange={e => handleItemChange(item.id, 'price', e.target.value)} placeholder="0.00" disabled={isSaved} />
                                 </div>
-                                <div>
+                                <div className="item-col-amount">
                                     <label className="form-label" style={{ display: index === 0 ? 'block' : 'none' }}>Amount</label>
-                                    <input type="text" className="form-control text-right" disabled value={((item.quantity || 0) * (item.price || 0)).toFixed(2)} />
+                                    <input type="text" className="form-control text-right" style={{background:'#f9fafb', fontWeight: 600, color:'var(--primary-color)'}} disabled value={((item.quantity || 0) * (item.price || 0)).toFixed(2)} />
                                 </div>
-                                <div style={{ paddingTop: index === 0 ? '28px' : '0' }}>
-                                    <button className="btn-danger-icon" onClick={() => handleRemoveItem(item.id)} disabled={isSaved || items.length === 1}>
+                                <div className="item-col-action" style={{ paddingTop: index === 0 ? '28px' : '0' }}>
+                                    <button className="btn-danger-icon modern-delete-btn" onClick={() => handleRemoveItem(item.id)} disabled={isSaved || items.length === 1}>
                                         <Trash2 size={20} />
                                     </button>
                                 </div>
@@ -263,21 +270,20 @@ export default function CreateInvoice() {
                         ))}
                     </div>
                     {!isSaved && (
-                        <button className="btn btn-secondary mt-2" onClick={handleAddItem}>
-                            <PlusCircle size={18} /> Add Item
+                        <button className="btn btn-secondary mt-4 hover-slide" onClick={handleAddItem} style={{ zIndex: 1, background: 'transparent', borderStyle: 'dashed', width: '100%', padding: '12px' }}>
+                            <PlusCircle size={18} /> Add Another Item
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* ── STAMP UPLOAD + TOTAL BAR ── */}
-            <div className="total-bar d-print-none">
-                <div>
-                    <span className="text-muted">Total Amount: </span>
-                    <span className="font-bold" style={{ fontSize: '24px', color: 'var(--primary-color)' }}>₹ {totalAmount.toFixed(2)}</span>
+            {/* ── TOTAL & ACTION BAR ── */}
+            <div className="total-action-bar fade-up-4 d-print-none">
+                <div className="total-display">
+                    <span className="text-muted" style={{ fontWeight: 600, fontSize: '13px', textTransform:'uppercase', letterSpacing:'1px' }}>Total Amount</span>
+                    <span className="font-bold amount-highlight">₹ {totalAmount.toFixed(2)}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                    {/* Stamp upload */}
+                <div className="action-buttons-wrap">
                     <input
                         ref={stampInputRef}
                         type="file"
@@ -286,155 +292,142 @@ export default function CreateInvoice() {
                         onChange={handleStampUpload}
                     />
                     <button
-                        className="btn btn-secondary"
-                        style={{ fontSize: '13px' }}
+                        className="btn btn-secondary action-btn-outline"
                         onClick={() => stampInputRef.current?.click()}
                     >
-                        {stampImage ? '🔁 Change Stamp' : '🖼️ Upload Stamp'}
+                        {stampImage ? <><RefreshCw size={16}/> Change Stamp</> : <><Upload size={16}/> Default Stamp</>}
                     </button>
                     {stampImage && (
                         <button
-                            className="btn btn-secondary"
-                            style={{ fontSize: '12px', color: '#dc2626', borderColor: '#fca5a5' }}
+                            className="btn btn-secondary action-btn-danger"
                             onClick={handleRemoveStamp}
                         >
-                            ✕ Remove Stamp
+                            ✕ Remove
                         </button>
                     )}
-                    {/* Action buttons */}
+
                     {!isSaved ? (
-                        <button className="btn btn-primary" onClick={handleSaveInvoice} disabled={isSaving}>
-                            {isSaving ? 'Saving...' : 'Generate Invoice'}
+                        <button className="btn btn-primary premium-glow-btn generate-btn" onClick={handleSaveInvoice} disabled={isSaving}>
+                            <Sparkles size={18} /> {isSaving ? 'Processing...' : 'Generate Invoice'}
                         </button>
                     ) : (
-                        <>
-                            <button className="btn btn-primary" disabled><CheckCircle size={18} /> Saved</button>
-                            <button className="btn btn-secondary" onClick={handleDownloadPDF}><Download size={18} /> Download PDF</button>
-                            <button className="btn btn-secondary" onClick={handlePrint}><Printer size={18} /> Print Invoice</button>
-                        </>
+                        <div style={{display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'center'}}>
+                            <div className="success-badge"><CheckCircle size={16} /> Saved</div>
+                            <button className="btn btn-secondary action-btn-solid" onClick={handleDownloadPDF}><Download size={18} /> Download PDF</button>
+                            <button className="btn btn-secondary action-btn-solid" onClick={handlePrint}><Printer size={18} /> Print</button>
+                        </div>
                     )}
                 </div>
             </div>
 
             {/* PREVIEW SECTION */}
-            <h3 className="section-title d-print-none" style={{ marginBottom: '12px' }}>Invoice Preview</h3>
-            <div className="invoice-preview-container d-print-none-wrapper">
+            <h3 className="section-title modern-section-title d-print-none fade-up-5" style={{ marginBottom: '20px', marginTop: '40px' }}>Document Preview</h3>
+            
+            <div className="invoice-preview-container d-print-none-wrapper fade-up-5">
                 <div id="invoice" className="invoice-preview" ref={printRef}>
 
-                    {/* ── HEADER ── */}
-                    <div className="inv-header">
-                        <span className="inv-brand-gold">Est. Malerkotla, Punjab</span>
-                        <h1 className="inv-brand">SH&#256;HI BOUTIQUE</h1>
-                        <p className="inv-tagline">Exclusive Ladies Suits &amp; Designer Wear &nbsp;✦&nbsp; Premium Fashion House</p>
-                        <div className="inv-divider"><span className="inv-divider-jewel">❖</span></div>
-                    </div>
+                    {/* ── WATERMARK ── */}
+                    <div className="inv-watermark">SH&#256;HI</div>
 
-                    {/* ── INVOICE TITLE ROW ── */}
-                    <div className="inv-title-row">
-                        <span className="inv-doc-label">&#9670; Tax Invoice</span>
-                        <span className="inv-number">{invoiceNumber}</span>
+                    {/* ── HEADER ── */}
+                    <div className="inv-header-pro">
+                        <div className="inv-header-left">
+                            <span className="inv-brand-pro">SH&#256;HI BOUTIQUE</span>
+                            <span className="inv-tagline-pro">Premium Ladies Fashion & Designer Wear</span>
+                            <span className="inv-address-pro">Est. Malerkotla, Punjab</span>
+                        </div>
+                        <div className="inv-header-right">
+                            <div className="inv-type-badge-pro">TAX INVOICE</div>
+                            <div className="inv-number-pro">{invoiceNumber}</div>
+                        </div>
                     </div>
 
                     {/* ── CUSTOMER INFO ── */}
-                    <div className="inv-info-grid">
-                        <div className="inv-info-col">
-                            <div className="inv-info-label">Billed To</div>
-                            <div className="inv-customer-name">{customerName || '—'}</div>
-                            {phone && <div className="inv-info-value">📞 {phone}</div>}
+                    <div className="inv-info-pro">
+                        <div className="inv-col-pro">
+                            <div className="inv-label-pro">BILLED TO</div>
+                            <div className="inv-val-client">{customerName || 'Walk-in Client'}</div>
+                            {phone && <div className="inv-val-phone">{phone}</div>}
                         </div>
-                        <div className="inv-info-col inv-info-right">
-                            <div className="inv-info-row">
-                                <span className="inv-info-label">Bill No</span>
-                                <span className="inv-info-value inv-bold">{invoiceNumber}</span>
-                            </div>
-                            <div className="inv-info-row">
-                                <span className="inv-info-label">Receiving Date</span>
-                                <span className="inv-info-value">{recDate ? new Date(recDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</span>
-                            </div>
-                            <div className="inv-info-row">
-                                <span className="inv-info-label">Delivery Date</span>
-                                <span className="inv-info-value">{delDate ? new Date(delDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</span>
-                            </div>
+                        <div className="inv-col-pro" style={{ textAlign: 'right' }}>
+                            <table style={{ marginLeft: 'auto', borderCollapse:'collapse' }}>
+                                <tbody>
+                                    <tr>
+                                        <td className="inv-label-pro" style={{paddingRight:'12px'}}>RECEIVING DATE</td>
+                                        <td className="inv-val-date">{recDate ? new Date(recDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="inv-label-pro" style={{paddingRight:'12px', paddingTop:'8px'}}>DELIVERY DATE</td>
+                                        <td className="inv-val-date" style={{paddingTop:'8px'}}>{delDate ? new Date(delDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
                     {/* ── ITEMS TABLE ── */}
-                    <div className="inv-table-wrapper">
-                    <table className="inv-table">
-                        <thead>
-                            <tr>
-                                <th className="inv-th inv-th-sno">#</th>
-                                <th className="inv-th">Description</th>
-                                <th className="inv-th inv-text-right">Qty</th>
-                                <th className="inv-th inv-text-right">Rate (₹)</th>
-                                <th className="inv-th inv-text-right">Amount (₹)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {items.map((item, index) => {
-                                const qty = parseFloat(item.quantity) || 0;
-                                const price = parseFloat(item.price) || 0;
-                                return (
-                                    <tr key={index} className={index % 2 === 1 ? 'inv-tr-alt' : ''}>
-                                        <td className="inv-td inv-td-center">{index + 1}</td>
-                                        <td className="inv-td">{item.description || '—'}</td>
-                                        <td className="inv-td inv-text-right">{qty}</td>
-                                        <td className="inv-td inv-text-right">{price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                        <td className="inv-td inv-text-right inv-bold">{(qty * price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                    </tr>
-                                );
-                            })}
-                            {items.length < 5 && Array.from({ length: 5 - items.length }).map((_, i) => (
-                                <tr key={`empty-${i}`}>
-                                    <td className="inv-td inv-td-center inv-td-empty">&nbsp;</td>
-                                    <td className="inv-td inv-td-empty" colSpan={4}></td>
+                    <div className="inv-table-wrapper-pro">
+                        <table className="inv-table-pro">
+                            <thead>
+                                <tr>
+                                    <th className="th-pro th-sno">#</th>
+                                    <th className="th-pro">DESCRIPTION</th>
+                                    <th className="th-pro th-qty">QTY</th>
+                                    <th className="th-pro th-rate">RATE (₹)</th>
+                                    <th className="th-pro th-amt">AMOUNT (₹)</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {items.map((item, index) => {
+                                    const qty = parseFloat(item.quantity) || 0;
+                                    const price = parseFloat(item.price) || 0;
+                                    return (
+                                        <tr key={index} className="tr-pro">
+                                            <td className="td-pro td-sno ">{String(index + 1).padStart(2,'0')}</td>
+                                            <td className="td-pro">{item.description || '—'}</td>
+                                            <td className="td-pro td-qty">{qty}</td>
+                                            <td className="td-pro td-rate">{price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                            <td className="td-pro td-amt">{(qty * price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                        </tr>
+                                    );
+                                })}
+                                {items.length < 5 && Array.from({ length: 5 - items.length }).map((_, i) => (
+                                    <tr key={`empty-${i}`} className="tr-pro">
+                                        <td className="td-pro td-empty">&nbsp;</td>
+                                        <td colSpan={4} className="td-pro td-empty"></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
                     {/* ── TOTAL BLOCK ── */}
-                    <div className="inv-totals-section">
-                        <div className="inv-totals-box">
-                            <div className="inv-total-row">
-                                <span className="inv-total-label">TOTAL</span>
-                                <span className="inv-total-value">₹ {totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="inv-amount-words">
-                                <span className="inv-words-label">Amount in Words: </span>
-                                <span className="inv-words-value">{convertNumberToWords(totalAmount)}</span>
+                    <div className="inv-totals-pro">
+                        <div className="inv-words-wrap">
+                            <span className="inv-words-lbl">AMOUNT IN WORDS</span>
+                            <span className="inv-words-txt">{convertNumberToWords(totalAmount)}</span>
+                        </div>
+                        <div className="inv-amount-wrap">
+                            <div className="inv-amount-row">
+                                <span className="inv-amt-lbl">GRAND TOTAL</span>
+                                <span className="inv-amt-val">₹ {totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* ── FOOTER ── */}
-                    <div className="inv-footer">
-                        <div className="inv-footer-left">
-                            <span className="inv-thankyou">✦ Thank you for shopping with Shahi Boutique.</span>
-                            <span className="inv-footer-note">This is a computer-generated invoice. No signature required.</span>
+                    <div className="inv-footer-pro">
+                        <div className="inv-footer-msg">
+                            <span className="inv-msg-bold">Terms & Conditions</span>
+                            <span className="inv-msg-txt">1. Goods once sold cannot be returned. 2. This is a computer generated invoice.</span>
                         </div>
 
-                        {/* Stamp: image if uploaded, CSS seal otherwise */}
                         {stampImage ? (
-                            <img
-                                src={stampImage}
-                                alt="Official Stamp"
-                                className="inv-stamp-img"
-                            />
+                            <img src={stampImage} alt="Official Stamp" className="inv-stamp-real" />
                         ) : (
-                            <div className="inv-stamp">
-                                <div className="inv-stamp-outer">
-                                    <div className="inv-stamp-inner">
-                                        <div className="inv-stamp-content">
-                                            <div className="inv-stamp-brand">SH&#256;HI</div>
-                                            <div className="inv-stamp-divline" />
-                                            <div className="inv-stamp-sub">BOUTIQUE</div>
-                                            <div className="inv-stamp-city">MALERKOTLA</div>
-                                            <div className="inv-stamp-divline" />
-                                            <div className="inv-stamp-official">✦ OFFICIAL STAMP ✦</div>
-                                        </div>
-                                    </div>
+                            <div className="inv-stamp-digital">
+                                <div className="stamp-ring">
+                                    <div className="stamp-inner">SH&#256;HI<br/><span style={{fontSize:'7px'}}>AUTHORIZED</span></div>
                                 </div>
                             </div>
                         )}
@@ -442,13 +435,194 @@ export default function CreateInvoice() {
 
                 </div>
             </div>
-            {/* Added a special class for non-print items */}
+
+            {/* Custom local styling to override the dashboard/recharts styling isolated to this component */}
             <style>{`
+                /* Animation Classes */
+                .page-animate-in { animation: fadeIn 0.4s ease-out; }
+                .fade-up-1 { animation: fadeUp 0.5s ease-out 0.1s both; }
+                .fade-up-2 { animation: fadeUp 0.5s ease-out 0.2s both; }
+                .fade-up-3 { animation: fadeUp 0.5s ease-out 0.3s both; }
+                .fade-up-4 { animation: fadeUp 0.5s ease-out 0.4s both; }
+                .fade-up-5 { animation: fadeUp 0.5s ease-out 0.5s both; }
+                
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+                .form-items-modern { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+                .item-row-modern { display: grid; grid-template-columns: 2.5fr 0.8fr 1.2fr 1.2fr auto; gap: 16px; align-items: flex-end; animation: fadeUp 0.3s ease-out; padding: 16px; background: #fafafa; border-radius: 12px; border: 1px solid #f3f4f6; }
+                
+                .modern-delete-btn { width: 44px; height: 44px; background: #fff; border: 1px solid #fee2e2; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #dc2626; cursor: pointer; transition: all 0.2s; }
+                .modern-delete-btn:hover:not(:disabled) { background: #fee2e2; transform: translateY(-2px); }
+                .modern-delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+                .total-action-bar { display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); border: 1px solid var(--border-color); margin-bottom: 30px; margin-top: 10px; flex-wrap: wrap; gap: 20px; }
+                .total-display { display: flex; flex-direction: column; }
+                .amount-highlight { font-size: 28px; color: var(--primary-color); line-height: 1.2; font-family: var(--font-heading); }
+                
+                .action-buttons-wrap { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+                .action-btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); font-weight: 600; padding: 10px 16px; display: flex; gap: 8px; border-radius: 10px; }
+                .action-btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+                .action-btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-weight: 600; padding: 10px 16px; border-radius: 10px; }
+                .action-btn-danger:hover { background: #fee2e2; }
+                .action-btn-solid { background: white; color: var(--text-main); border: 1px solid #d1d5db; padding: 10px 16px; border-radius: 10px; font-weight: 600; display: flex; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+                .action-btn-solid:hover { background: #f9fafb; }
+                
+                .generate-btn { padding: 12px 24px; font-size: 15px; font-weight: 600; border-radius: 10px; display: flex; gap: 8px; align-items: center; }
+                
+                .success-badge { display: flex; align-items: center; gap: 6px; background: #dcfce7; color: #166534; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; border: 1px solid #bbf7d0; }
+
+                /* Premium Invoice Preview Styles */
+                .invoice-preview-container {
+                    background: #f3f4f6;
+                    padding: 40px;
+                    border-radius: 16px;
+                    border: 1px dashed #cbd5e1;
+                    /* Use block/auto to allow horizontal scrolling on small screens without flex truncating */
+                    display: block;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                    text-align: center;
+                }
+                
+                .invoice-preview {
+                    width: 794px; /* A4 Width approximation */
+                    height: 1122px; /* A4 Height slightly under 297mm to prevent blank page bleed */
+                    background: #FFFFFF;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                    position: relative;
+                    overflow: hidden;
+                    box-sizing: border-box;
+                    color: #111827;
+                    font-family: 'Inter', sans-serif;
+                    margin: 0 auto;
+                    text-align: left;
+                }
+
+                .inv-watermark {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                    font-size: 180px;
+                    font-weight: 900;
+                    color: rgba(139, 0, 0, 0.02);
+                    z-index: 0;
+                    pointer-events: none;
+                    font-family: var(--font-heading);
+                }
+
+                .inv-header-pro {
+                    padding: 50px 50px 30px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    border-bottom: 2px solid #8B0000;
+                    position: relative;
+                    z-index: 1;
+                }
+
+                .inv-header-left { display: flex; flex-direction: column; gap: 4px; }
+                .inv-brand-pro { font-size: 32px; font-weight: 800; color: #8B0000; letter-spacing: 2px; font-family: var(--font-heading); }
+                .inv-tagline-pro { font-size: 12px; color: #4B5563; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+                .inv-address-pro { font-size: 12px; color: #6B7280; margin-top: 2px; }
+
+                .inv-header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+                .inv-type-badge-pro { background: #8B0000; color: #FFF; padding: 6px 16px; font-size: 14px; font-weight: 700; letter-spacing: 2px; border-radius: 4px; }
+                .inv-number-pro { font-size: 16px; font-weight: 600; color: #374151; }
+
+                .inv-info-pro {
+                    padding: 40px 50px;
+                    display: flex;
+                    justify-content: space-between;
+                    position: relative;
+                    z-index: 1;
+                }
+                .inv-col-pro { flex: 1; }
+                .inv-label-pro { font-size: 10px; font-weight: 700; color: #9CA3AF; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+                .inv-val-client { font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+                .inv-val-phone { font-size: 14px; color: #4B5563; font-weight: 500; }
+                .inv-val-date { font-size: 14px; font-weight: 600; color: #111827; }
+
+                .inv-table-wrapper-pro { padding: 0 50px; position: relative; z-index: 1; min-height: 400px; }
+                .inv-table-pro { width: 100%; border-collapse: collapse; }
+                .th-pro { padding: 12px 16px; text-align: left; background: #F9FAFB; font-size: 11px; font-weight: 700; color: #4B5563; letter-spacing: 1px; border-bottom: 2px solid #E5E7EB; border-top: 2px solid #E5E7EB; }
+                .th-sno { width: 50px; text-align: center; }
+                .th-qty, .th-rate, .th-amt { text-align: right; }
+                
+                .td-pro { padding: 16px; font-size: 13px; color: #374151; border-bottom: 1px solid #F3F4F6; }
+                .td-sno { text-align: center; font-weight: 600; color: #9CA3AF; }
+                .td-qty, .td-rate { text-align: right; }
+                .td-amt { text-align: right; font-weight: 700; color: #111827; }
+                .td-empty { padding: 22px 16px; border-bottom: 1px solid #F9FAFB; }
+
+                .inv-totals-pro {
+                    display: flex;
+                    padding: 0 50px;
+                    margin-top: 20px;
+                    position: relative;
+                    z-index: 1;
+                }
+                .inv-words-wrap { flex: 2; padding: 20px 20px 20px 0; border-top: 2px solid #E5E7EB; }
+                .inv-words-lbl { display: block; font-size: 10px; font-weight: 700; color: #9CA3AF; letter-spacing: 1px; margin-bottom: 8px; }
+                .inv-words-txt { font-size: 13px; font-weight: 600; color: #4B5563; font-style: italic; }
+
+                .inv-amount-wrap { flex: 1; background: #FFFBFB; padding: 20px 24px; border: 2px solid #8B0000; border-radius: 8px; margin-top: -2px; }
+                .inv-amount-row { display: flex; justify-content: space-between; align-items: center; }
+                .inv-amt-lbl { font-size: 14px; font-weight: 700; color: #8B0000; letter-spacing: 1px; }
+                .inv-amt-val { font-size: 24px; font-weight: 800; color: #8B0000; font-family: var(--font-heading); }
+
+                .inv-footer-pro {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    padding: 40px 50px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                    z-index: 1;
+                }
+                .inv-footer-msg { display: flex; flex-direction: column; gap: 4px; }
+                .inv-msg-bold { font-size: 11px; font-weight: 700; color: #4B5563; }
+                .inv-msg-txt { font-size: 10px; color: #9CA3AF; max-width: 250px; line-height: 1.4; }
+
+                .inv-stamp-real { max-width: 120px; max-height: 120px; object-fit: contain; }
+                .inv-stamp-digital { width: 100px; height: 100px; border: 3px solid rgba(139, 0, 0, 0.2); border-radius: 50%; padding: 4px; display: flex; align-items: center; justify-content: center; }
+                .stamp-ring { width: 100%; height: 100%; border: 1px solid rgba(139, 0, 0, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: rotate(-15deg); }
+                .stamp-inner { text-align: center; color: rgba(139, 0, 0, 0.5); font-weight: 800; font-size: 16px; letter-spacing: 1px; line-height: 1.2; }
+
+                /* Mobile overrides for layout */
+                @media (max-width: 768px) {
+                    .item-row-modern { grid-template-columns: 1fr; }
+                    .invoice-preview-container { padding: 16px; text-align: left; }
+                    .invoice-preview { 
+                        transform: none; 
+                        margin-bottom: 0; 
+                        /* Uses zoom for perfect reflow scaling; falls back to native scroll if unsupported */
+                        zoom: 0.42; 
+                    }
+                }
+
                 @media print {
                     .d-print-none { display: none !important; }
+                    .invoice-preview-container { padding: 0; border: none; background: transparent; overflow: visible; }
+                    .invoice-preview { box-shadow: none; transform: none; margin: 0; zoom: 1; text-align: left; }
+                }
+
+                /* Required for html2pdf rendering */
+                .invoice-pdf {
+                    width: 794px !important;
+                    height: 1122px !important;
+                    box-shadow: none !important;
+                    margin: 0 !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    background: white !important;
+                    zoom: 1 !important;
+                    transform: none !important;
                 }
             `}</style>
         </div>
     );
 }
-
