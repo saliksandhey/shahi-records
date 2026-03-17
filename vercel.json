@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "shahi-boutique/dist",
+  "framework": "vite",
+  "installCommand": "echo skip",
+  "rootDirectory": "shahi-boutique",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
